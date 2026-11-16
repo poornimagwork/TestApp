@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+import { createBirthdayMusic } from './birthdayMusic'
 import './App.css'
 
 const confetti = Array.from({ length: 24 }, (_, i) => i)
@@ -87,6 +89,30 @@ function AnimalFace({ type, color }) {
 }
 
 function App() {
+  const musicRef = useRef(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  useEffect(() => {
+    musicRef.current = createBirthdayMusic()
+    return () => {
+      musicRef.current?.stop()
+    }
+  }, [])
+
+  async function toggleMusic() {
+    const music = musicRef.current
+    if (!music) return
+
+    if (isPlaying) {
+      music.stop()
+      setIsPlaying(false)
+      return
+    }
+
+    await music.play()
+    setIsPlaying(true)
+  }
+
   return (
     <main className="party">
       <div className="party__glow" aria-hidden="true" />
@@ -117,6 +143,34 @@ function App() {
         <p className="party__message">
           Your animal friends gathered to celebrate you today.
         </p>
+
+        <button
+          type="button"
+          className={`party__music ${isPlaying ? 'is-playing' : ''}`}
+          onClick={toggleMusic}
+          aria-pressed={isPlaying}
+        >
+          <span className="party__music-icon" aria-hidden="true">
+            {isPlaying ? (
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
+                <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
+              </svg>
+            )}
+          </span>
+          {isPlaying ? 'Pause Birthday Song' : 'Play Birthday Song'}
+          {isPlaying && (
+            <span className="party__eq" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
+        </button>
       </section>
 
       <section className="friends" aria-label="Birthday wishes from animals">
